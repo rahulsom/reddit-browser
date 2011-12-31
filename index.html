@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Reddit Browser</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <!--<link rel="stylesheet/less" href="css/bootstrap.less"> -->
+    <!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/less.js/1.1.3/less-1.1.3.min.js"></script> -->
+    <style type="text/css">
+      .inline-form {
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+      #main {
+        margin-top: 55px;
+        margin-left: 0; margin-right: 0;
+      }
+
+      .fluid-content {
+        margin-left: 230px;
+        margin-right: 230px;
+      }
+
+      #stories-holder, #comments-holder {
+        overflow-y: scroll;
+      }
+
+      #stories small {
+        color: #BFBFBF;
+      }
+
+      #stories tr:hover {
+        background-color: #EFF;
+      }
+
+      #stories tr:nth-child(odd):hover td {
+        background-color: #DEE;
+      }
+
+      #stories tr a.superlink {
+        text-decoration: none;
+        display: block;
+        margin: -8;
+        padding: 8;
+      }
+
+      #stories tr.active, #stories tr.active:nth-child(odd) td {
+        background-color: #CDD;
+      }
+
+      .replies {
+        padding-left: 10px;
+      }
+    </style>
+
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="http://www.redditstatic.com/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="https://github.com/andyet/ICanHaz.js/raw/master/ICanHaz.min.js"></script>
+
+    <!-- ICH Templates -->
+    <script id="story" type="text/html">
+      <tr>
+        <td>
+          <a href="#" comments="http://www.reddit.com/{{permalink}}" story="{{url}}" isSelf="{{is_self}}" class="superlink">
+            <small>{{author}}</small>
+            <small class="pull-right">{{domain}}</small>
+            <div>{{title}}</div>
+          </a>
+          <a href="{{url}}" target="_blank">Story</a>
+          <a href="http://www.reddit.com/{{permalink}}" target="_blank">Thread</a>
+        </td>
+      </tr>
+    </script>    
+
+    <script id="comment" type="text/html">
+      <div id="{{id}}">
+        <div class="message">
+                <blockquote>
+          {{body}}
+          </blockquote>
+        </div>
+        <div class="replies"></div>
+      </div>
+    </script>    
+
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-fixed" data-scrollspy="scrollspy">
+      <div class="navbar-inner">
+        <div class="fluid-container">
+          <form class="inline-form">
+            <a class="brand" href="./index.html">Reddit Browser</a>
+              <input id="reddit-name"></input>
+              <input id="browse" class="btn primary" type="button" value="Browse"></input>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="fluid-container" id="main">
+      <!-- <div class="row"> -->
+        <div class="fluid-sidebar-left" id="stories-holder">
+          <table id="stories" class="striped-table">
+          </table>
+        </div>
+        <div class="fluid-sidebar-right" id="comments-holder">
+          <table id="comments" class="striped-table">
+            <tr>
+              <td>
+                Comments
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div class="fluid-content">
+          <div id="story-holder">
+            Story
+          </div>
+        </div>
+      <!-- </div> -->
+    </div>
+
+    <script>
+      var storyCount = 0;
+      var lastMarker = null;
+      var fetchingStories = false;
+
+      function addReplies(id, replies) {
+        if (replies && replies.data && replies.data.children)
+        $.each(replies.data.children, function(replyId) {
+          var reply = replies.data.children[replyId];
+          $('#' + id+' .replies').append(ich.comment(reply.data));
+          if (reply.data.replies) {
+            setTimeout(addReplies(reply.data.id, reply.data.replies), 1000);
+          }
+        });
+      }
+
+      function processStories(response) {
+        storyCount += 25;
+        lastMarker = response.data.after;
+        var currScroll = $('#stories-holder').scrollTop();
+        
+        $.each(response.data.children, function(ctr) {
+          var child = response.data.children[ctr];
+          var storyText = ich.story(child.data);
+          $('#stories').append(storyText);
+        });
+
+        $('#stories tr td a').click(function(event) {
+          $('#story-holder').html('<iframe width="100%" height="100%" name="youriframe" frameborder="0" vspace="0" hspace="0" arginwidth="0" marginheight="0" scrolling="yes" noresize src="' + event.currentTarget.attributes.story.value + '"></iframe>');
+          $('#stories tr').removeClass('active');
+          $(event.currentTarget).parents('tr').addClass('active');
+          if (event.currentTarget.attributes.isSelf.value == 'false') {
+            $('#comments-holder').html('');
+            $.ajax({
+              success : function(response) {
+                var commentsSection = response[1];
+                $.each(commentsSection.data.children, function(commentId) {
+                  var comment = commentsSection.data.children[commentId];
+                  $('#comments-holder').append(ich.comment(comment.data));
+                  addReplies(comment.data.id, comment.data.replies);
+                });
+              },
+              url: event.currentTarget.attributes.comments.value + '.json',
+              type: "GET"
+            });
+
+          } else {
+            $('#comments-holder').html('&nbsp;');
+          }
+          doSomething();
+          return false;
+        });
+
+        $('#stories-holder').scrollTop(currScroll);
+        fetchingStories = false;
+      }
+                    
+      $('#browse').click(function() {
+        $('#stories').html('');
+        var redditName = $('#reddit-name').val();
+        fetchingStories = true;
+        $.ajax({
+          success : processStories,
+          url: 'http://www.reddit.com/' + redditName + '.json',
+          type: "GET"
+        });
+
+      });
+
+      $('#browse').click();
+
+      $(window).load(function () {
+        doSomething();          
+      });
+
+      function doSomething() {
+        $('#stories-holder').height($(window).height() - 60);
+        $('iframe').height($(window).height() - 60);
+      };
+
+      var resizeTimer;
+      $(window).resize(function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(doSomething, 100);
+      });
+
+
+      $('#stories-holder').scroll(function(event){
+        var scrollLeft = event.currentTarget.scrollHeight - event.currentTarget.scrollTop;
+        var height = event.currentTarget.offsetHeight
+        if (scrollLeft < 2 * height) {
+          fetchMoreStories();
+        }
+      });
+
+      function fetchMoreStories() {
+        if (fetchingStories) {
+          return;
+        }
+        fetchingStories = true;
+
+        var scrollTop = $('#stories-holder').scrollTop();
+        var scrollMax = $('#stories-holder')[0].scrollHeight;
+
+        var redditName = $('#reddit-name').val();
+        $.ajax({
+          success : processStories,
+          url: 'http://www.reddit.com/' + redditName + '.json?after=' + lastMarker ,
+          type: "GET"
+        });
+
+
+      }
+            
+    </script>
+  </body>
+</html>
