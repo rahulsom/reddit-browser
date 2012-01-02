@@ -21,7 +21,7 @@
         margin-bottom: 10px;
       }
       #main {
-        margin-top: 55px;
+        margin-top: 50px;
         padding-left: 0; padding-right: 0;
       }
 
@@ -165,7 +165,7 @@
         if (replies && replies.data && replies.data.children) {
           $.each(replies.data.children, function(replyId) {
             var reply = replies.data.children[replyId];
-            reply.data.body = formatComment(reply.data.body, /\[(.*?)\]\((.*?)\)/, '<a href="$2" target="_blank">$1</a>');
+            reply.data.body = formatCommentWell(reply.data.body);
             $('#' + id+' > .replies').append(ich.comment(reply.data));
             if (reply.data.replies) {
               addReplies(reply.data.id, reply.data.replies);
@@ -201,7 +201,7 @@
                 var commentsSection = response[1];
                 $.each(commentsSection.data.children, function(commentId) {
                   var comment = commentsSection.data.children[commentId];
-                  comment.data.body = formatComment(comment.data.body, /\[(.*?)\]\((.*?)\)/, '<a href="$2" target="_blank">$1</a>');
+                  comment.data.body = formatCommentWell(comment.data.body);
                   $('#comments-holder').append(ich.comment(comment.data));
                   addReplies(comment.data.id, comment.data.replies);
                 });
@@ -283,6 +283,12 @@
             text = text.replace(regexp, rewrite);
             console.log (oldText + ' --> ' + text);
         }
+        return text;
+      }
+
+      function formatCommentWell(text) {
+        text = formatComment(text, /\[(.*?)\]\((.*?)\)/, '<a href="$2" target="_blank">$1</a>');
+        text = text.replace(/\n/g, '<br/>');
         return text;
       }
             
