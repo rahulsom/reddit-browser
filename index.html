@@ -32,6 +32,7 @@
 
       #stories-holder, #comments-holder {
         overflow-y: scroll;
+        width: 230px;
       }
 
       #stories small {
@@ -43,7 +44,7 @@
       }
 
       #stories tr:nth-child(odd):hover td {
-        background-color: #DEE;
+        background-color: #EFF;
       }
 
       #stories tr a.superlink {
@@ -54,15 +55,23 @@
       }
 
       #stories tr.active, #stories tr.active:nth-child(odd) td {
-        background-color: #CDD;
+        background-color: #E0E0E0;
       }
 
-      .replies {
+      .comment > .replies {
         padding-left: 10px;
       }
 
-      .replies .replies .replies .replies {
-        padding-left: 0;
+      .comment > .replies > .replies{
+        padding-left: 10px;
+      }
+
+      .comment > .replies > .replies > .replies {
+        padding-left: 10px;
+      }
+
+      .comment > .replies > .replies > .replies > .replies{
+        padding-left: 10px;
       }
 
       a.superlink small {
@@ -100,11 +109,9 @@
     </script>    
 
     <script id="comment" type="text/html">
-      <div id="{{id}}">
+      <div id="{{id}}" class="comment">
         <div class="message">
-          <blockquote>
-            {{body}}
-          </blockquote>
+          <blockquote>{{body}}</blockquote>
         </div>
         <div class="replies"></div>
       </div>
