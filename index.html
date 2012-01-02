@@ -74,6 +74,12 @@
         padding-left: 10px;
       }
 
+      .message {
+        padding-left: 15px;
+        margin-bottom: 18px;
+        border-left: 5px solid #EEE;
+      }
+
       a.superlink small {
         white-space: nowrap;
         overflow: hidden;
@@ -111,7 +117,7 @@
     <script id="comment" type="text/html">
       <div id="{{id}}" class="comment">
         <div class="message">
-          <blockquote>{{body}}</blockquote>
+          {{{body}}}
         </div>
         <div class="replies"></div>
       </div>
@@ -159,6 +165,7 @@
         if (replies && replies.data && replies.data.children) {
           $.each(replies.data.children, function(replyId) {
             var reply = replies.data.children[replyId];
+            reply.data.body = formatComment(reply.data.body, /\[(.*?)\]\((.*?)\)/, '<a href="$2" target="_blank">$1</a>');
             $('#' + id+' > .replies').append(ich.comment(reply.data));
             if (reply.data.replies) {
               addReplies(reply.data.id, reply.data.replies);
@@ -194,6 +201,7 @@
                 var commentsSection = response[1];
                 $.each(commentsSection.data.children, function(commentId) {
                   var comment = commentsSection.data.children[commentId];
+                  comment.data.body = formatComment(comment.data.body, /\[(.*?)\]\((.*?)\)/, '<a href="$2" target="_blank">$1</a>');
                   $('#comments-holder').append(ich.comment(comment.data));
                   addReplies(comment.data.id, comment.data.replies);
                 });
@@ -267,8 +275,15 @@
           url: 'http://www.reddit.com/' + redditName + '.json?after=' + lastMarker ,
           type: "GET"
         });
+      }
 
-
+      function formatComment(text, regexp, rewrite) {
+        var oldText = text;
+        while (text.match(regexp)) {
+            text = text.replace(regexp, rewrite);
+            console.log (oldText + ' --> ' + text);
+        }
+        return text;
       }
             
     </script>
