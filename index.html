@@ -84,6 +84,15 @@
         white-space: nowrap;
         overflow: hidden;
       }
+
+      div.message span.cite{
+        float: right;
+        color: #BFBFBF;
+      }
+
+      div.message span.cite:before {
+        content: ' - ';
+      }
     </style>
 
     <!-- Le fav and touch icons -->
@@ -99,7 +108,7 @@
     <script id="story" type="text/html">
       <tr>
         <td>
-          <a href="#" comments="http://www.reddit.com/{{permalink}}" story="{{url}}" isSelf="{{is_self}}" class="superlink">
+          <a href="#" comments="http://www.reddit.com/{{permalink}}" story="{{url}}" isSelf="{{is_self}}" class="superlink" id="{{id}}">
             <span>
               <small>{{author}}</small>
             </span>
@@ -116,8 +125,8 @@
 
     <script id="comment" type="text/html">
       <div id="{{id}}" class="comment">
-        <div class="message">
-          {{{body}}}
+        <div class="message">{{{body}}}
+        <span class="cite">{{author}}</span>
         </div>
         <div class="replies"></div>
       </div>
@@ -166,9 +175,11 @@
           $.each(replies.data.children, function(replyId) {
             var reply = replies.data.children[replyId];
             reply.data.body = formatCommentWell(reply.data.body);
-            $('#' + id+' > .replies').append(ich.comment(reply.data));
-            if (reply.data.replies) {
-              addReplies(reply.data.id, reply.data.replies);
+            if (document.getElementById(reply.data.id) == null) {
+              $('#' + id+' > .replies').append(ich.comment(reply.data));
+              if (reply.data.replies) {
+                addReplies(reply.data.id, reply.data.replies);
+              }
             }
           });
         }
@@ -181,14 +192,16 @@
         
         $.each(response.data.children, function(ctr) {
           var child = response.data.children[ctr];
-          var storyText = ich.story(child.data);
-          $('#stories').append(storyText);
+          if (document.getElementById(child.data.id) == null) {
+            var storyText = ich.story(child.data);
+            $('#stories').append(storyText);
+          }
         });
 
         $('a.superlink').click(function(event) {
           var storyUrl = event.currentTarget.attributes.story.value;
           if (storyUrl.match(/jpg$/) || storyUrl.match(/png$/) || storyUrl.match(/gif$/) ) {
-            $('#story-holder').html('<img src="' + storyUrl + '"></img>');
+            $('#story-holder').html('<img src="' + storyUrl + '" height="' + $('#stories-holder').height() + 'px"></img>');
           } else {
             $('#story-holder').html('<iframe width="100%" height="100%" name="youriframe" frameborder="0" vspace="0" hspace="0" arginwidth="0" marginheight="0" scrolling="yes" noresize src="' + storyUrl + '"></iframe>');
           }
@@ -202,8 +215,10 @@
                 $.each(commentsSection.data.children, function(commentId) {
                   var comment = commentsSection.data.children[commentId];
                   comment.data.body = formatCommentWell(comment.data.body);
-                  $('#comments-holder').append(ich.comment(comment.data));
-                  addReplies(comment.data.id, comment.data.replies);
+                  if (!document.getElementById(comment.data.id)) {
+                    $('#comments-holder').append(ich.comment(comment.data));
+                    addReplies(comment.data.id, comment.data.replies);
+                  }
                 });
               },
               url: event.currentTarget.attributes.comments.value + '.json',
@@ -288,6 +303,9 @@
 
       function formatCommentWell(text) {
         text = formatComment(text, /\[(.*?)\]\((.*?)\)/, '<a href="$2" target="_blank">$1</a>');
+        text = formatComment(text, /\*\*(.*?)\*\*/, '<strong>$1</strong>');
+        text = formatComment(text, /\*(.*?)\*/, '<em>$1</em>');
+        // text = formatComment(text, /([^\"^'])?(http[^ ]*)([^\"^'])?/, '$1<a href="$2">$2</a>$3');
         text = text.replace(/\n/g, '<br/>');
         return text;
       }
