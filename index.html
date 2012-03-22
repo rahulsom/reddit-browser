@@ -85,6 +85,10 @@
         overflow: hidden;
       }
 
+      a.superlink:visited {
+        color: #BBB;
+      }
+
       div.message span.cite{
         float: right;
         color: #BFBFBF;
@@ -92,6 +96,14 @@
 
       div.message span.cite:before {
         content: ' - ';
+      }
+
+      a.extLink {
+        visibility: hidden;
+      }
+
+      tr.storyRow:hover a.extLink {
+        visibility: visible;
       }
     </style>
 
@@ -106,9 +118,9 @@
 
     <!-- ICH Templates -->
     <script id="story" type="text/html">
-      <tr>
+      <tr class="storyRow">
         <td>
-          <a href="#" comments="http://www.reddit.com/{{permalink}}" story="{{url}}" isSelf="{{is_self}}" class="superlink" id="{{id}}">
+          <a href="#{{id}}" comments="http://www.reddit.com/{{permalink}}" story="{{url}}" isSelf="{{is_self}}" class="superlink" id="{{id}}">
             <span>
               <small>{{author}}</small>
             </span>
@@ -117,8 +129,8 @@
             </span>
             <div>{{title}}</div>
           </a>
-          <a href="{{url}}" target="_blank">Story</a>
-          <a href="http://www.reddit.com/{{permalink}}" target="_blank">Thread</a>
+          <a href="{{url}}" target="_blank" class="extLink">Story</a>
+          <a href="http://www.reddit.com/{{permalink}}" target="_blank" class="extLink">Thread</a>
         </td>
       </tr>
     </script>    
@@ -229,7 +241,7 @@
             $('#comments-holder').html('&nbsp;');
           }
           doSomething();
-          return false;
+          //return false;
         });
 
         $('#stories-holder').scrollTop(currScroll);
