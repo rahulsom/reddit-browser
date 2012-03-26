@@ -310,7 +310,7 @@
           dataType: 'jsonp',
           jsonp: 'jsonp',
           success : processStories,
-          url: 'http://www.reddit.com/' + redditName + '.json',
+          url: createRedditUrl(redditName, null),
           type: "GET"
         });
       });
@@ -368,7 +368,7 @@
           dataType: 'jsonp',
           jsonp: 'jsonp',
           success : processStories,
-          url: 'http://www.reddit.com/' + redditName + '.json?after=' + lastMarker ,
+          url: createRedditUrl(redditName, lastMarker) ,
           type: "GET"
         });
       }
@@ -389,6 +389,21 @@
         // text = formatComment(text, /([^\"^'])?(http[^ ]*)([^\"^'])?/, '$1<a href="$2">$2</a>$3');
         text = text.replace(/\n/g, '<br/>');
         return text;
+      }
+
+      function createRedditUrl(redditName, lastMarker) {
+        var newReddits = false;
+          if (lastMarker == null) {
+            return 'http://www.reddit.com/' + redditName + '/new.json?sort=new';
+          } else {
+            return 'http://www.reddit.com/' + redditName + '/new.json?sort=new&after=' + lastMarker;
+        } else {
+          if (lastMarker == null) {
+            return 'http://www.reddit.com/' + redditName + '/.json';
+          } else {
+            return 'http://www.reddit.com/' + redditName + '/.json?after=' + lastMarker;
+          }
+        }
       }
             
     </script>
