@@ -226,11 +226,12 @@
           if (event.currentTarget.attributes.oembed.value == '') {
             var storyUrl = event.currentTarget.attributes.story.value;
 
-            // if (storyUrl.match(/jpg$/) || storyUrl.match(/png$/) || storyUrl.match(/gif$/) ) {
-            //   $('#story-holder').html('<img src="' + storyUrl + '" height="' + $('#stories-holder').height() + '"></img>');
-            // } else {
+            if (storyUrl.match(/jpg$/) || storyUrl.match(/png$/) || storyUrl.match(/gif$/) ) {
+              $('#story-holder').html('<img src="' + storyUrl + '" height="' + $('#stories-holder').height() + 'px" id="theImage"></img>');
+              $('#theImage').height($('#stories-holder').height() );
+            } else {
               $('#story-holder').html('<iframe width="100%" height="100%" name="youriframe" frameborder="0" vspace="0" hspace="0" arginwidth="0" marginheight="0" scrolling="yes" noresize src="' + storyUrl + '"></iframe>');
-            // }
+            }
 
           } else {
 
