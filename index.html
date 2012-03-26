@@ -121,6 +121,26 @@
     <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="http://timeago.yarp.com/jquery.timeago.js"></script>
+    <script>
+      jQuery.timeago.settings.strings = {
+        prefixFromNow: null,
+        suffixAgo: "ago",
+        suffixFromNow: "from now",
+        minute: "seconds",
+        minutes: "%d minutes",
+        hour: "about an hour",
+        hours: "about %d hours",
+        day: "a day",
+        days: "%d days",
+        month: "about a month",
+        months: "%d months",
+        year: "about a year",
+        years: "%d years",
+        wordSeparator: " ",
+        numbers: []
+      };
+    </script>
     <script src="https://github.com/andyet/ICanHaz.js/raw/master/ICanHaz.min.js"></script>
 
     <!-- ICH Templates -->
@@ -141,6 +161,9 @@
           </a>
           <a href="{{url}}" target="_blank" class="extLink">Story</a>
           <a href="http://www.reddit.com/{{permalink}}" target="_blank" class="extLink">Thread</a>
+          <small class="pull-right extLink">
+            <abbr class="timeago" title="{{created_timestamp}}">{{created_timestamp}}</abbr>
+          </small>
         </td>
       </tr>
     </script>    
@@ -215,10 +238,12 @@
         $.each(response.data.children, function(ctr) {
           var child = response.data.children[ctr];
           if (document.getElementById(child.data.id) == null) {
+            child.data.created_timestamp = $.timeago(getLocalTime(child.data.created_utc));
             var storyText = ich.story(child.data);
             $('#stories').append(storyText);
           }
         });
+
 
         $('a.superlink').click(function(event) {
           $(event.currentTarget).addClass('read');
@@ -320,6 +345,12 @@
           fetchMoreStories();
         }
       });
+
+      function getLocalTime(utc) {
+        var d = new Date(0);
+        d.setUTCSeconds(utc);
+        return d;
+      }
 
       function fetchMoreStories() {
         if (fetchingStories) {
