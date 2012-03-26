@@ -393,10 +393,12 @@
 
       function createRedditUrl(redditName, lastMarker) {
         var newReddits = false;
+        if (newReddits) {
           if (lastMarker == null) {
             return 'http://www.reddit.com/' + redditName + '/new.json?sort=new';
           } else {
             return 'http://www.reddit.com/' + redditName + '/new.json?sort=new&after=' + lastMarker;
+          }
         } else {
           if (lastMarker == null) {
             return 'http://www.reddit.com/' + redditName + '/.json';
