@@ -161,7 +161,7 @@
     <div class="navbar navbar-fixed" data-scrollspy="scrollspy">
       <div class="navbar-inner">
         <div class="fluid-container">
-          <form class="inline-form">
+          <form class="inline-form" id="redditSelector">
             <a class="brand" href="./index.html">Reddit Browser</a>
               <input id="reddit-name"></input>
               <input id="browse" class="btn primary" type="button" value="Browse"></input>
@@ -286,7 +286,11 @@
           url: 'http://www.reddit.com/' + redditName + '.json',
           type: "GET"
         });
+      });
 
+      $('#redditSelector').submit(function() {
+        $('#browse').click();
+        return false;
       });
 
       $('#browse').click();
