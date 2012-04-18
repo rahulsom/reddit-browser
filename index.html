@@ -429,19 +429,8 @@
 
         text = formatComment(text, /(^|[^\(])(https?[\.\w:/\?\+\-\=\&\%]*)([^\)]|$)/g, ' [$2]($2) ');
         var text = converter.makeHtml(text);
-        // html = formatComment(html, /(http:\/\/[^ ^)^\]]*)/, '<a href="$1">$1</a>');
-        // text = formatComment(text, /\[(.*?)\]\((.*?)\)/, '<a href="$2" target="_blank">$1</a>');
-        // text = formatComment(text, /\[(.*?)\] \((.*?)\)/, '<a href="$2" target="_blank">$1</a>');
-        // text = formatComment(text, /\*\*(.*?)\*\*/, '<strong>$1</strong>');
-        // text = formatComment(text, /~~(.*?)~~/, '<del>$1</del>');
-        // text = formatComment(text, /\*(.*?)\*/, '<em>$1</em>');
-        // if (text.find(' ') < 0 && text.match(/http.*/)) {
-        //   foo = '<a href="' + text + '">Link</a>'
-        //   text = foo
-        // }
+        text = formatComment(text, /~~([^~]*)~~/g, '<del>$1</del>');
 
-        // // text = formatComment(text, /([^\"^'])?(http[^ ]*)([^\"^'])?/, '$1<a href="$2">$2</a>$3');
-        // text = text.replace(/\n/, '<br/>');
         return text;
       }
 
