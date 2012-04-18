@@ -16,9 +16,22 @@
     <!--<link rel="stylesheet/less" href="css/bootstrap.less"> -->
     <!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/less.js/1.1.3/less-1.1.3.min.js"></script> -->
     <style type="text/css">
-      .inline-form {
-        margin-top: 10px;
-        margin-bottom: 10px;
+      .form-inline {
+        margin-top: 0;
+        margin-bottom: 5px;
+      }
+      .form-inline .btn {
+        margin-top: 0;
+      }
+      .form-inline .btn-group {
+        display: inline-block;
+        margin-bottom: 0;
+        margin-top: 0;
+        top: 10px;
+      }
+
+      .brand {
+        margin-top: 5px;
       }
       #main {
         margin-top: 50px;
@@ -26,11 +39,12 @@
       }
 
       .fluid-content {
-        margin-left: 230px;
+        /*margin-left: 230px;*/
+        overflow: auto;
       }
 
       .fluid-content-without-comments {
-        margin-right: 230px;
+        /*margin-right: 230px;*/
       }
 
       #stories-holder, #comments-holder {
@@ -122,6 +136,7 @@
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script src="http://timeago.yarp.com/jquery.timeago.js"></script>
+    <script src="https://raw.github.com/coreyti/showdown/master/compressed/showdown.js"></script>
     <script>
       jQuery.timeago.settings.strings = {
         prefixAgo: null,
@@ -144,6 +159,7 @@
       };
     </script>
     <script src="https://github.com/andyet/ICanHaz.js/raw/master/ICanHaz.min.js"></script>
+    <script src="js/bootstrap.js"></script>
 
     <!-- ICH Templates -->
     <script id="story" type="text/html">
@@ -183,39 +199,54 @@
 
   <body>
 
-    <div class="navbar navbar-fixed" data-scrollspy="scrollspy">
+    <div class="navbar navbar-fixed-top" data-scrollspy="scrollspy">
       <div class="navbar-inner">
-        <div class="fluid-container">
-          <form class="inline-form" id="redditSelector">
-            <a class="brand" href="./index.html">Reddit Browser</a>
-              <input id="reddit-name"></input>
-              <input id="browse" class="btn primary" type="button" value="Browse"></input>
+        <div class="container-fluid">
+          <a class="brand" href="./index.html">Reddit Browser</a>
+          <form class="form-inline form-horizontal" id="redditSelector">
+            <input id="reddit-name"></input>
+            <input id="browse" class="btn primary" type="button" value="Browse"></input>
+            <div class="btn-group" data-toggle="buttons-radio">
+              <button class="btn" id="popular">Popular</button>
+              <button class="btn" id="newstories">New</button>
+            </div>            
           </form>
         </div>
       </div>
     </div>
 
-    <div class="fluid-container" id="main">
-      <!-- <div class="row"> -->
-        <div class="fluid-sidebar-left" id="stories-holder">
-          <table id="stories" class="striped-table">
+    <div class="container-fluid" id="main">
+      <div class="row">
+        <div class="fluid-sidebar-left span2" id="stories-holder">
+          <table id="stories" class="table table-striped">
           </table>
         </div>
-        <div class="fluid-sidebar-right" id="comments-holder">
+        <div class="fluid-sidebar-right span2 pull-right" id="comments-holder">
           Comments
         </div>
-        <div class="fluid-content">
+        <div class="fluid-content span8">
           <div id="story-holder">
             Story
           </div>
         </div>
-      <!-- </div> -->
+      </div>
     </div>
 
     <script>
       var storyCount = 0;
       var lastMarker = null;
       var fetchingStories = false;
+      var newReddits = false;
+
+      $('#popular').click(function() {
+        newReddits = false;
+      });
+
+      $('#newstories').click(function() {
+        newReddits = true;
+      });
+
+      $('#popular').button('toggle');
 
       function addReplies(id, replies) {
         if (replies && replies.data && replies.data.children) {
@@ -255,7 +286,11 @@
 
             if (storyUrl.match(/jpg$/) || storyUrl.match(/png$/) || storyUrl.match(/gif$/) ) {
               $('#story-holder').html('<img src="' + storyUrl + '" height="' + $('#stories-holder').height() + 'px" id="theImage"></img>');
-              $('#theImage').height($('#stories-holder').height() );
+              $('#theImage').css('max-height', $('#stories-holder').height() - 30);
+              $('#theImage').css('max-width', $('.fluid-content').width());
+              setTimeout(100, function() {
+                $('#theImage').css('width', '100%');
+              });
             } else {
               $('#story-holder').html('<iframe width="100%" height="100%" name="youriframe" frameborder="0" vspace="0" hspace="0" arginwidth="0" marginheight="0" scrolling="yes" noresize src="' + storyUrl + '"></iframe>');
             }
@@ -282,16 +317,17 @@
                     addReplies(comment.data.id, comment.data.replies);
                   }
                 });
+                $('.comment a').attr('target', '_blank');
               },
               url: event.currentTarget.attributes.comments.value + '.json',
               type: "GET"
             });
             $('#comments-holder').show();
-            $('.fluid-content').addClass('fluid-content-without-comments');
+            $('.fluid-content').width($('#main').width() - $('#stories-holder').width() * 2 - 60);
           } else {
             $('#comments-holder').html('&nbsp;');
             $('#comments-holder').hide();
-            $('.fluid-content').removeClass('fluid-content-without-comments');
+            $('.fluid-content').width($('#main').width() - $('#stories-holder').width() - 30);
           }
           doSomething();
 
@@ -375,24 +411,41 @@
 
       function formatComment(text, regexp, rewrite) {
         var oldText = text;
-        while (text.match(regexp)) {
-            text = text.replace(regexp, rewrite);
-            console.log (oldText + ' --> ' + text);
+        if (text != null) {
+          text = text.replace(regexp, rewrite);
         }
         return text;
       }
 
+      var converter = new Showdown.converter();
+
       function formatCommentWell(text) {
-        text = formatComment(text, /\[(.*?)\]\((.*?)\)/, '<a href="$2" target="_blank">$1</a>');
-        text = formatComment(text, /\*\*(.*?)\*\*/, '<strong>$1</strong>');
-        text = formatComment(text, /\*(.*?)\*/, '<em>$1</em>');
-        // text = formatComment(text, /([^\"^'])?(http[^ ]*)([^\"^'])?/, '$1<a href="$2">$2</a>$3');
-        text = text.replace(/\n/g, '<br/>');
+
+        if (text == null) {
+          return null;
+        }
+
+        text = htmlDecode(text);
+
+        text = formatComment(text, /(^|[^\(])(https?[\.\w:/\?\+\-\=\&\%]*)([^\)]|$)/g, ' [$2]($2) ');
+        var text = converter.makeHtml(text);
+        // html = formatComment(html, /(http:\/\/[^ ^)^\]]*)/, '<a href="$1">$1</a>');
+        // text = formatComment(text, /\[(.*?)\]\((.*?)\)/, '<a href="$2" target="_blank">$1</a>');
+        // text = formatComment(text, /\[(.*?)\] \((.*?)\)/, '<a href="$2" target="_blank">$1</a>');
+        // text = formatComment(text, /\*\*(.*?)\*\*/, '<strong>$1</strong>');
+        // text = formatComment(text, /~~(.*?)~~/, '<del>$1</del>');
+        // text = formatComment(text, /\*(.*?)\*/, '<em>$1</em>');
+        // if (text.find(' ') < 0 && text.match(/http.*/)) {
+        //   foo = '<a href="' + text + '">Link</a>'
+        //   text = foo
+        // }
+
+        // // text = formatComment(text, /([^\"^'])?(http[^ ]*)([^\"^'])?/, '$1<a href="$2">$2</a>$3');
+        // text = text.replace(/\n/, '<br/>');
         return text;
       }
 
       function createRedditUrl(redditName, lastMarker) {
-        var newReddits = false;
         if (newReddits) {
           if (lastMarker == null) {
             return 'http://www.reddit.com/' + redditName + '/new.json?sort=new';
@@ -407,7 +460,12 @@
           }
         }
       }
-            
+
+      function htmlDecode(input){
+        var e = document.createElement('div');
+        e.innerHTML = input;
+        return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+      }      
     </script>
   </body>
 </html>
