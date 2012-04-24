@@ -237,6 +237,7 @@
       var lastMarker = null;
       var fetchingStories = false;
       var newReddits = false;
+      var pendingRequests = [];
 
       $('#popular').click(function() {
         newReddits = false;
@@ -279,6 +280,10 @@
 
 
         $('a.superlink').click(function(event) {
+          for (i = 0; i < pendingRequests.length; i ++) {
+            req = pendingRequests.pop();
+            req.abort();
+          }
           $(event.currentTarget).addClass('read');
 
           if (event.currentTarget.attributes.oembed.value == '') {
@@ -300,11 +305,13 @@
             $('#story-holder').html(event.currentTarget.attributes.oembed.value);
 
           }
+
           $('#stories tr').removeClass('active');
           $(event.currentTarget).parents('tr').addClass('active');
+
           if (event.currentTarget.attributes.isSelf.value == 'false') {
             $('#comments-holder').html('');
-            $.ajax({
+            req = $.ajax({
               dataType: 'jsonp',
               jsonp: 'jsonp',
               success : function(response) {
@@ -322,6 +329,7 @@
               url: event.currentTarget.attributes.comments.value + '.json',
               type: "GET"
             });
+            pendingRequests.push(req);
             $('#comments-holder').show();
             $('.fluid-content').width($('#main').width() - $('#stories-holder').width() * 2 - 60);
           } else {
@@ -342,13 +350,14 @@
         $('#stories').html('');
         var redditName = $('#reddit-name').val();
         fetchingStories = true;
-        $.ajax({
+        req = $.ajax({
           dataType: 'jsonp',
           jsonp: 'jsonp',
           success : processStories,
           url: createRedditUrl(redditName, null),
           type: "GET"
         });
+        pendingRequests.push(req);
       });
 
       $('#redditSelector').submit(function() {
@@ -400,13 +409,14 @@
         var scrollMax = $('#stories-holder')[0].scrollHeight;
 
         var redditName = $('#reddit-name').val();
-        $.ajax({
+        req = $.ajax({
           dataType: 'jsonp',
           jsonp: 'jsonp',
           success : processStories,
           url: createRedditUrl(redditName, lastMarker) ,
           type: "GET"
         });
+        pendingRequests.push (req);
       }
 
       function formatComment(text, regexp, rewrite) {
@@ -420,17 +430,13 @@
       var converter = new Showdown.converter();
 
       function formatCommentWell(text) {
-
         if (text == null) {
           return null;
         }
-
         text = htmlDecode(text);
-
         text = formatComment(text, /(^|[^\(])(https?[\.\w:/\?\+\-\=\&\%]*)([^\)]|$)/g, ' [$2]($2) ');
         var text = converter.makeHtml(text);
         text = formatComment(text, /~~([^~]*)~~/g, '<del>$1</del>');
-
         return text;
       }
 
