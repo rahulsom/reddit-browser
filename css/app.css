@@ -1,0 +1,110 @@
+.form-inline {
+  margin-top: 0;
+  margin-bottom: 5px;
+}
+.form-inline .btn {
+  margin-top: 0;
+}
+.form-inline .btn-group {
+  display: inline-block;
+  margin-bottom: 0;
+  margin-top: 0;
+  top: 10px;
+}
+
+.brand {
+  margin-top: 5px;
+}
+#main {
+  margin-top: 50px;
+  padding-left: 0; padding-right: 0;
+}
+
+.fluid-content {
+  /*margin-left: 230px;*/
+  overflow: auto;
+}
+
+.fluid-content-without-comments {
+  /*margin-right: 230px;*/
+}
+
+#stories-holder, #comments-holder {
+  overflow-y: scroll;
+  width: 230px;
+}
+
+#stories small {
+  color: #BFBFBF;
+}
+
+#stories tr:hover {
+  background-color: #EFF;
+}
+
+#stories tr:nth-child(odd):hover td {
+  background-color: #EFF;
+}
+
+#stories tr a.superlink {
+  text-decoration: none;
+  display: block;
+  margin: -8;
+  padding: 8;
+}
+
+#stories tr.active, #stories tr.active:nth-child(odd) td {
+  background-color: #E0E0E0;
+}
+
+.comment > .replies {
+  padding-left: 10px;
+}
+
+.comment > .replies > .replies{
+  padding-left: 10px;
+}
+
+.comment > .replies > .replies > .replies {
+  padding-left: 10px;
+}
+
+.comment > .replies > .replies > .replies > .replies{
+  padding-left: 10px;
+}
+
+.message {
+  padding-left: 15px;
+  margin-bottom: 18px;
+  border-left: 5px solid #EEE;
+}
+
+a.superlink small {
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+a.superlink {
+  font-weight: bold;
+}
+
+a.superlink.read {
+  font-weight: normal;
+}
+
+div.message span.cite{
+  float: right;
+  color: #BFBFBF;
+}
+
+div.message span.cite:before {
+  content: ' - ';
+}
+
+.extLink {
+  visibility: hidden;
+}
+
+tr.storyRow:hover .extLink {
+  visibility: visible;
+}
