@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="css/bootstrap.css">
     <link rel="stylesheet" href="css/app.css">
 
+    <!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/less.js/1.1.3/less-1.1.3.min.js"></script> -->
 
     <!-- Le fav and touch icons -->
     <link rel="shortcut icon" href="http://www.redditstatic.com/favicon.ico">
@@ -23,6 +24,7 @@
     <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="https://raw.github.com/balupton/history.js/master/scripts/bundled/html4+html5/jquery.history.js"></script>
     <script src="http://timeago.yarp.com/jquery.timeago.js"></script>
     <script src="https://raw.github.com/coreyti/showdown/master/compressed/showdown.js"></script>
     <script src="js/timeago-conf.js"></script>
@@ -100,12 +102,14 @@
       </div>
     </div>
 
+    <script src="js/replies.js"></script>
     <script>
       var storyCount = 0;
       var lastMarker = null;
       var fetchingStories = false;
       var newReddits = false;
       var pendingRequests = [];
+      var History = window.History; // Note: We are using a capital H instead of a lower h
 
       $('#popular').click(function() {
         newReddits = false;
@@ -116,21 +120,6 @@
       });
 
       $('#popular').button('toggle');
-
-      function addReplies(id, replies) {
-        if (replies && replies.data && replies.data.children) {
-          $.each(replies.data.children, function(replyId) {
-            var reply = replies.data.children[replyId];
-            reply.data.body = formatCommentWell(reply.data.body);
-            if (document.getElementById(reply.data.id) == null) {
-              $('#' + id+' > .replies').append(ich.comment(reply.data));
-              if (reply.data.replies) {
-                addReplies(reply.data.id, reply.data.replies);
-              }
-            }
-          });
-        }
-      }
 
       function processStories(response) {
         storyCount += 25;
@@ -214,30 +203,47 @@
         fetchingStories = false;
       }
                     
-      $('#browse').click(function() {
-        $('#stories').html('');
-        var redditName = $('#reddit-name').val();
-        fetchingStories = true;
-        req = $.ajax({
-          dataType: 'jsonp',
-          jsonp: 'jsonp',
-          success : processStories,
-          url: createRedditUrl(redditName, null),
-          type: "GET"
-        });
-        pendingRequests.push(req);
-      });
-
       $('#redditSelector').submit(function() {
         $('#browse').click();
         return false;
       });
 
-      $('#browse').click();
+
+      $('#browse').click(function() {
+        lastMarker = null;
+        $('#stories').html('');
+        fetchMoreStories();
+      });
 
       $(window).load(function () {
-        doSomething();          
+        console.log ('Page Loading...');
+        if (History.getState() == null) {
+          fetchMoreStories();
+        }
+        doSomething();     
       });
+
+      History.Adapter.bind(window,'popstate',function(){ // Note: We are using statechange instead of popstate
+        console.log ('State Popped...');
+        var State = History.getState(); // Note: We are using History.getState() instead of event.state
+        History.log(State.data, State.title, State.url);
+        $('#reddit-name').val(State.data.redditName);
+        if (State.data.newReddits) {
+          $('#newReddits').click();
+        } else {
+          $('#popular').click();
+        }
+
+        req = $.ajax({
+          dataType: 'jsonp',
+          jsonp: 'jsonp',
+          success : processStories,
+          url: State.data.url,
+          type: "GET"
+        });
+        pendingRequests.push(req);
+
+      });      
 
       function doSomething() {
         var diff = 54
@@ -277,58 +283,35 @@
         var scrollMax = $('#stories-holder')[0].scrollHeight;
 
         var redditName = $('#reddit-name').val();
-        req = $.ajax({
-          dataType: 'jsonp',
-          jsonp: 'jsonp',
-          success : processStories,
-          url: createRedditUrl(redditName, lastMarker) ,
-          type: "GET"
-        });
-        pendingRequests.push (req);
+        pushToHistory(redditName, lastMarker);
       }
 
-      function formatComment(text, regexp, rewrite) {
-        var oldText = text;
-        if (text != null) {
-          text = text.replace(regexp, rewrite);
-        }
-        return text;
-      }
 
-      var converter = new Showdown.converter();
-
-      function formatCommentWell(text) {
-        if (text == null) {
-          return null;
-        }
-        text = htmlDecode(text);
-        text = formatComment(text, /(^|[^\(])(https?[\.\w:/\?\+\-\=\&\%]*)([^\)]|$)/g, ' [$2]($2) ');
-        var text = converter.makeHtml(text);
-        text = formatComment(text, /~~([^~]*)~~/g, '<del>$1</del>');
-        return text;
-      }
-
-      function createRedditUrl(redditName, lastMarker) {
+      function pushToHistory(redditName, lastMarker) {
+        console.log ('Pushing state...');
+        var myUrl = null
         if (newReddits) {
           if (lastMarker == null) {
-            return 'http://www.reddit.com/' + redditName + '/new.json?sort=new';
+            myUrl = 'http://www.reddit.com/' + redditName + '/new.json?sort=new';
           } else {
-            return 'http://www.reddit.com/' + redditName + '/new.json?sort=new&after=' + lastMarker;
+            myUrl = 'http://www.reddit.com/' + redditName + '/new.json?sort=new&after=' + lastMarker;
           }
         } else {
           if (lastMarker == null) {
-            return 'http://www.reddit.com/' + redditName + '/.json';
+            myUrl = 'http://www.reddit.com/' + redditName + '/.json';
           } else {
-            return 'http://www.reddit.com/' + redditName + '/.json?after=' + lastMarker;
+            myUrl = 'http://www.reddit.com/' + redditName + '/.json?after=' + lastMarker;
           }
         }
+        var stateObj = { after: lastMarker, redditName: redditName, newReddits: newReddits, url: myUrl };
+        var urlPart = '?reddit=' + redditName + '&new=' + newReddits + '&after=' + lastMarker;
+        if (redditName == '') {
+          redditName = 'Home';
+        }
+        History.replaceState(stateObj, 'Reddit Browser » ' + redditName, urlPart);
+        console.log ('... State Pushed');
       }
 
-      function htmlDecode(input){
-        var e = document.createElement('div');
-        e.innerHTML = input;
-        return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
-      }      
     </script>
   </body>
 </html>
