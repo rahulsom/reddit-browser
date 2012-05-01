@@ -50,7 +50,7 @@
           <a href="{{url}}" target="_blank" class="extLink">Story</a>
           <a href="http://www.reddit.com/{{permalink}}" target="_blank" class="extLink">Thread</a>
           <small class="pull-right extLink">
-            <abbr class="timeago" title="{{created_timestamp}}">{{created_timestamp}}</abbr>
+            <abbr class="timeago" title="{{created_timestamp}}">{{created_timestamp}}</abbr> on {{subreddit}}
           </small>
         </td>
       </tr>
@@ -121,6 +121,28 @@
 
       $('#popular').button('toggle');
 
+      function preProcessStory(data) {
+        var url = data.url;
+        var domain = data.domain;
+        data.url = formatComment(data.url, /http:\/\/imgur.com\/([^\/^\?]*)$/, 'http://i.imgur.com/$1.png');
+
+        data.url = formatComment(data.url, /http:\/\/qkme.me\/([^\/^\?]*)$/, 'http://i.qkme.me/$1.jpg');
+        data.url = formatComment(data.url, /http:\/\/qkme.me\/([^\/^\?]*)\/$/, 'http://i.qkme.me/$1.jpg');
+        data.url = formatComment(data.url, /http:\/\/qkme.me\/([^\/^\?]*)\?id\=\d*$/, 'http://i.qkme.me/$1.jpg');
+
+        data.url = formatComment(data.url, /http:\/\/www.quickmeme.com\/meme\/([^\/^\?]*)$/, 'http://i.qkme.me/$1.jpg');
+        data.url = formatComment(data.url, /http:\/\/www.quickmeme.com\/meme\/([^\/^\?]*)\/$/, 'http://i.qkme.me/$1.jpg');
+        data.url = formatComment(data.url, /http:\/\/www.quickmeme.com\/meme\/([^\/^\?]*)\?id\=\d*$/, 'http://i.qkme.me/$1.jpg');
+
+        if (domain.length > 30) {
+          data.domain = data.domain.substring(0, 30);
+        }
+
+        console.log (url + ' --> ' + data.url);
+        console.log (domain + ' --> ' + data.domain);
+        return data;
+      }
+
       function processStories(response) {
         storyCount += 25;
         lastMarker = response.data.after;
@@ -130,7 +152,7 @@
           var child = response.data.children[ctr];
           if (document.getElementById(child.data.id) == null) {
             child.data.created_timestamp = $.timeago(getLocalTime(child.data.created_utc));
-            var storyText = ich.story(child.data);
+            var storyText = ich.story(preProcessStory(child.data));
             $('#stories').append(storyText);
           }
         });
@@ -192,7 +214,7 @@
           } else {
             $('#comments-holder').html('&nbsp;');
             $('#comments-holder').hide();
-            $('.fluid-content').width($('#main').width() - $('#stories-holder').width() - 30);
+            $('.fluid-content').width($('#main').width() - $('#stories-holder').width() - 40);
           }
           doSomething();
 
@@ -217,10 +239,11 @@
 
       $(window).load(function () {
         console.log ('Page Loading...');
-        if (History.getState() == null) {
+        var state = History.getState();
+        console.log(state.title);
+        if (state == null || state.title == null || state.title == '' ) {
           fetchMoreStories();
         }
-        doSomething();     
       });
 
       History.Adapter.bind(window,'popstate',function(){ // Note: We are using statechange instead of popstate
