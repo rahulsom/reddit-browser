@@ -24,11 +24,11 @@
     <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="https://raw.github.com/balupton/history.js/master/scripts/bundled/html4+html5/jquery.history.js"></script>
+    <script src="js/jquery.history.js"></script>
     <script src="http://timeago.yarp.com/jquery.timeago.js"></script>
-    <script src="https://raw.github.com/coreyti/showdown/master/compressed/showdown.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/showdown/0.3.1/showdown.min.js"></script>
     <script src="js/timeago-conf.js"></script>
-    <script src="https://raw.github.com/HenrikJoreteg/ICanHaz.js/master/ICanHaz.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/ICanHaz.js/0.10/ICanHaz.min.js"></script>
     <script src="js/bootstrap.js"></script>
 
     <!-- ICH Templates -->
@@ -109,7 +109,7 @@
       var fetchingStories = false;
       var newReddits = false;
       var pendingRequests = [];
-      var History = window.History; // Note: We are using a capital H instead of a lower h
+      // var History = window.History; // Note: We are using a capital H instead of a lower h
 
       $('#popular').click(function() {
         newReddits = false;
@@ -239,11 +239,11 @@
 
       $(window).load(function () {
         console.log ('Page Loading...');
-        var state = History.getState();
-        console.log(state.title);
-        if (state == null || state.title == null || state.title == '' ) {
+        // var state = History.getState();
+        // console.log(state.title);
+        // if (state == null || state.title == null || state.title == '' ) {
           fetchMoreStories();
-        }
+        // }
       });
 
       History.Adapter.bind(window,'popstate',function(){ // Note: We are using statechange instead of popstate

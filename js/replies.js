@@ -31,6 +31,7 @@ function formatCommentWell(text) {
   if (text == null) {
     return null;
   }
+  text = formatComment(text, /\[(.*)?\] *?\((.*)?\)/, '[$1]($2)');
   text = htmlDecode(text);
   text = formatComment(text, /(^|[^\(])(https?[\.\w:/\?\+\-\=\&\%]*)([^\)]|$)/g, ' [$2]($2) ');
   var text = converter.makeHtml(text);
