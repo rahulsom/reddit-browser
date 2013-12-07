@@ -246,6 +246,7 @@
         // }
       });
 
+
       History.Adapter.bind(window,'popstate',function(){ // Note: We are using statechange instead of popstate
         console.log ('State Popped...');
         var State = History.getState(); // Note: We are using History.getState() instead of event.state
@@ -335,15 +336,6 @@
         console.log ('... State Pushed');
       }
 
-      $(document).keypress(function(event) {
-        if (event.which == 106) {
-          // j-walk
-          console.log ('down');
-        } else if (event.which == 107) {
-          // k-walk
-          console.log ('up');
-        }
-      });
     </script>
   </body>
 </html>
