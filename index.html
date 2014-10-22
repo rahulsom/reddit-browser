@@ -35,7 +35,7 @@
     <script id="story" type="text/html">
       <tr class="storyRow">
         <td>
-          <a href="#{{id}}" comments="http://www.reddit.com/{{permalink}}" story="{{url}}" isSelf="{{is_self}}" 
+          <a href="#{{id}}" comments="https://www.reddit.com/{{permalink}}" story="{{url}}" isSelf="{{is_self}}"
                 class="superlink" id="{{id}}"
                 oembed="{{media.oembed.html}}"
               >
@@ -48,13 +48,13 @@
             <div>{{title}}</div>
           </a>
           <a href="{{url}}" target="_blank" class="extLink">Story</a>
-          <a href="http://www.reddit.com/{{permalink}}" target="_blank" class="extLink">Thread</a>
+          <a href="https://www.reddit.com/{{permalink}}" target="_blank" class="extLink">Thread</a>
           <small class="pull-right extLink">
             <abbr class="timeago" title="{{created_timestamp}}">{{created_timestamp}}</abbr> on {{subreddit}}
           </small>
         </td>
       </tr>
-    </script>    
+    </script>
 
     <script id="comment" type="text/html">
       <div id="{{id}}" class="comment">
@@ -63,7 +63,7 @@
         </div>
         <div class="replies"></div>
       </div>
-    </script>    
+    </script>
 
   </head>
 
@@ -79,7 +79,7 @@
             <div class="btn-group" data-toggle="buttons-radio">
               <button class="btn" id="popular">Popular</button>
               <button class="btn" id="newstories">New</button>
-            </div>            
+            </div>
           </form>
         </div>
       </div>
@@ -147,7 +147,7 @@
         storyCount += 25;
         lastMarker = response.data.after;
         var currScroll = $('#stories-holder').scrollTop();
-        
+
         $.each(response.data.children, function(ctr) {
           var child = response.data.children[ctr];
           if (document.getElementById(child.data.id) == null) {
@@ -224,7 +224,7 @@
         $('#stories-holder').scrollTop(currScroll);
         fetchingStories = false;
       }
-                    
+
       $('#redditSelector').submit(function() {
         $('#browse').click();
         return false;
@@ -267,7 +267,7 @@
         });
         pendingRequests.push(req);
 
-      });      
+      });
 
       function doSomething() {
         var diff = 54
@@ -316,15 +316,15 @@
         var myUrl = null
         if (newReddits) {
           if (lastMarker == null) {
-            myUrl = 'http://www.reddit.com/' + redditName + '/new.json?sort=new';
+            myUrl = 'https://www.reddit.com/' + redditName + '/new.json?sort=new';
           } else {
-            myUrl = 'http://www.reddit.com/' + redditName + '/new.json?sort=new&after=' + lastMarker;
+            myUrl = 'https://www.reddit.com/' + redditName + '/new.json?sort=new&after=' + lastMarker;
           }
         } else {
           if (lastMarker == null) {
-            myUrl = 'http://www.reddit.com/' + redditName + '/.json';
+            myUrl = 'https://www.reddit.com/' + redditName + '/.json';
           } else {
-            myUrl = 'http://www.reddit.com/' + redditName + '/.json?after=' + lastMarker;
+            myUrl = 'https://www.reddit.com/' + redditName + '/.json?after=' + lastMarker;
           }
         }
         var stateObj = { after: lastMarker, redditName: redditName, newReddits: newReddits, url: myUrl };

@@ -108,3 +108,7 @@ div.message span.cite:before {
 tr.storyRow:hover .extLink {
   visibility: visible;
 }
+
+tr.storyRow div {
+  word-break: break-word;
+}
