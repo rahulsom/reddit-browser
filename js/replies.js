@@ -1,5 +1,5 @@
 
-var converter = new Showdown.converter();
+var converter = window.markdownit();
 
 /*
  * Adds replies to a comment
@@ -20,7 +20,6 @@ function addReplies(id, replies) {
 }
 
 function formatComment(text, regexp, rewrite) {
-  var oldText = text;
   if (text != null) {
     text = text.replace(regexp, rewrite);
   }
@@ -31,11 +30,14 @@ function formatCommentWell(text) {
   if (text == null) {
     return null;
   }
-  text = formatComment(text, /\[(.*)?\] *?\((.*)?\)/, '[$1]($2)');
-  text = htmlDecode(text);
-  text = formatComment(text, /(^|[^\(])(https?[\.\w:/\?\+\-\=\&\%]*)([^\)]|$)/g, ' [$2]($2) ');
-  var text = converter.makeHtml(text);
-  text = formatComment(text, /~~([^~]*)~~/g, '<del>$1</del>');
+  //text = formatComment(text, /\[ *((.*?) *)?\] *?\( *((.*?) *)?\)/, '[$2]($4)');
+  // text = formatComment(text, / *(https?:[/a-zA-Z0-9\.\?\+=]*) */, '[$1]($1)');
+  // text = formatComment(text, /[^[( ](https?:\/\/[^ ]*)/, '[$1]($1)');
+  // text = formatComment(text, /^(https?:\/\/[^ ]*)/, '[$1]($1)');
+  // text = htmlDecode(text);
+  // text = formatComment(text, /(^|[^\(])(https?[\.\w:/\?\+\-\=\&\%]*)([^\)]|$)/g, ' [$2]($2) ');
+  var text = converter.render(text);
+  // text = formatComment(text, /~~([^~]*)~~/g, '<del>$1</del>');
   return text;
 }
 
@@ -43,4 +45,4 @@ function htmlDecode(input){
   var e = document.createElement('div');
   e.innerHTML = input;
   return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
-}      
+}
