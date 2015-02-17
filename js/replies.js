@@ -31,7 +31,8 @@ function formatCommentWell(text) {
     return null;
   }
   //text = formatComment(text, /\[ *((.*?) *)?\] *?\( *((.*?) *)?\)/, '[$2]($4)');
-  text = formatComment(text, /( *)[^\[(](https?:[/a-zA-Z0-9\.\?\+=_#]*)( *)/g, '$1[$2]($2)$3');
+  text = formatComment(text, /^(https?:[/a-zA-Z0-9\.\?\+=_#]*)([ \n*])/, '[$1]($1)$2');
+  text = formatComment(text, /([ \n*])[^\[(](https?:[/a-zA-Z0-9\.\?\+=_#]*)([ \n*])/g, '$1[$2]($2)$3');
   // text = formatComment(text, /[^[( ](https?:\/\/[^ ]*)/, '[$1]($1)');
   // text = formatComment(text, /^(https?:\/\/[^ ]*)/, '[$1]($1)');
   // text = htmlDecode(text);
